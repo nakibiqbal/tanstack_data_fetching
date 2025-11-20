@@ -5,10 +5,14 @@ import type { Post } from "./API/types";
 import { fetchData } from "./API/api";
 
 export default function Home() {
-  const { data } = useQuery<Post[]>({
+  const { data, isLoading, isError, error } = useQuery<Post[]>({
     queryKey: ["posts"],
     queryFn: fetchData,
   });
+
+  if (isLoading) return <p>Data is loading...</p>;
+  if (isError)
+    return <p> Error: {error?.message || "Something went wrong"} </p>;
 
   return (
     <div>
