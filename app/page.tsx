@@ -1,28 +1,10 @@
-"use client";
-
-import { useQuery } from "@tanstack/react-query";
-import type { Post } from "./API/types";
-import { fetchData } from "./API/api";
+import Posts from "./posts/page";
 
 export default function Home() {
-  const { data, isLoading, isError, error } = useQuery<Post[]>({
-    queryKey: ["posts"],
-    queryFn: fetchData,
-  });
-
-  if (isLoading) return <p>Data is loading...</p>;
-  if (isError)
-    return <p> Error: {error?.message || "Something went wrong"} </p>;
-
   return (
     <div>
-      All the data
-      {data?.map((item) => (
-        <div key={item.id}>
-          <h2>{item.title}</h2>
-          <p>{item.body}</p>
-        </div>
-      ))}
+      <h1>All the data</h1>
+      <Posts />
     </div>
   );
 }
