@@ -1,10 +1,15 @@
 "use client";
 
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import type { Post } from "../API/types";
 import Link from "next/link";
 import { useState } from "react";
-import { fetchPaginationFunction } from "../API/api";
+import { deletePost, fetchPaginationFunction } from "../API/api";
 
 export default function PostsWithPagination() {
   const [pageNumber, setPageNumber] = useState(0);
@@ -15,6 +20,16 @@ export default function PostsWithPagination() {
     placeholderData: keepPreviousData,
   });
 
+  const queryClient = useQueryClient();
+  const deleteMutation = useMutation({
+    mutationFn: (id: number) => deletePost(id as number),
+    onSuccess: (data, id) => {
+      queryClient.setQueryData(["posts", pageNumber], (currElem: Post[]) => {
+        return currElem?.filter((post) => post.id !== id);
+      });
+    },
+  });
+
   if (isLoading) return <p>Data is loading...</p>;
   if (isError)
     return <p> Error: {error?.message || "Something went wrong"} </p>;
@@ -23,13 +38,18 @@ export default function PostsWithPagination() {
     <div>
       All the data
       {data?.map((item) => (
-        <Link key={item.id} href={`/posts/${item.id}`}>
-          <div>
-            <h1>This is post number {item.id}</h1>
-            <h2>{item.title}</h2>
-            <p>{item.body}</p>
-          </div>
-        </Link>
+        <>
+          <Link key={item.id} href={`/posts/${item.id}`}>
+            <div>
+              <h1>This is post number {item.id}</h1>
+              <h2>{item.title}</h2>
+              <p>{item.body}</p>
+            </div>
+          </Link>
+          <button onClick={() => deleteMutation.mutate(item.id as number)}>
+            Delete
+          </button>
+        </>
       ))}
       <div className="paginationSegment flex gap-[2rem] w-full ">
         <button
@@ -39,12 +59,7 @@ export default function PostsWithPagination() {
           Prev
         </button>
         <p>{pageNumber / 3 + 1}</p>
-        <button
-          onClick={() => setPageNumber((prev) => prev + 3)}
-          disabled={data && data.length < 3}
-        >
-          Next
-        </button>
+        <button onClick={() => setPageNumber((prev) => prev + 3)}>Next</button>
       </div>
     </div>
   );
