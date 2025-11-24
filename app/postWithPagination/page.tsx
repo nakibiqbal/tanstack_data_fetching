@@ -1,0 +1,51 @@
+"use client";
+
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import type { Post } from "../API/types";
+import Link from "next/link";
+import { useState } from "react";
+import { fetchPaginationFunction } from "../API/api";
+
+export default function PostsWithPagination() {
+  const [pageNumber, setPageNumber] = useState(0);
+
+  const { data, isLoading, isError, error } = useQuery<Post[]>({
+    queryKey: ["posts", pageNumber],
+    queryFn: () => fetchPaginationFunction(pageNumber),
+    placeholderData: keepPreviousData,
+  });
+
+  if (isLoading) return <p>Data is loading...</p>;
+  if (isError)
+    return <p> Error: {error?.message || "Something went wrong"} </p>;
+
+  return (
+    <div>
+      All the data
+      {data?.map((item) => (
+        <Link key={item.id} href={`/posts/${item.id}`}>
+          <div>
+            <h1>This is post number {item.id}</h1>
+            <h2>{item.title}</h2>
+            <p>{item.body}</p>
+          </div>
+        </Link>
+      ))}
+      <div className="paginationSegment flex gap-[2rem] w-full ">
+        <button
+          onClick={() => setPageNumber((prev) => prev - 3)}
+          disabled={pageNumber === 0 ? true : false}
+        >
+          Prev
+        </button>
+        <p>{pageNumber / 3 + 1}</p>
+        <button
+          onClick={() => setPageNumber((prev) => prev + 3)}
+          disabled={data && data.length < 3}
+        >
+          Next
+        </button>
+      </div>
+    </div>
+  );
+}
