@@ -5,12 +5,13 @@ import type { Post } from "../../API/types";
 
 import { useParams } from "next/navigation";
 import { fetchPostById } from "../../API/api";
+import Link from "next/link";
 
 export default function Post() {
   const { id } = useParams();
 
   const { data, isLoading, isError, error } = useQuery<Post>({
-    queryKey: ["post"],
+    queryKey: ["post", id],
     queryFn: () => fetchPostById(id as string),
   });
 
@@ -24,6 +25,7 @@ export default function Post() {
       <h2>These are the detail about the post</h2>
       <p>{data?.title}</p>
       <p>{data?.body}</p>
+      <Link href="/posts">Go back to posts</Link>
     </div>
   );
 }
