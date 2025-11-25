@@ -9,7 +9,7 @@ import {
 import type { Post } from "../API/types";
 import Link from "next/link";
 import { useState } from "react";
-import { deletePost, fetchPaginationFunction } from "../API/api";
+import { deletePost, fetchPaginationFunction, updatePost } from "../API/api";
 
 export default function PostsWithPagination() {
   const [pageNumber, setPageNumber] = useState(0);
@@ -26,6 +26,17 @@ export default function PostsWithPagination() {
     onSuccess: (data, id) => {
       queryClient.setQueryData(["posts", pageNumber], (currElem: Post[]) => {
         return currElem?.filter((post) => post.id !== id);
+      });
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: (id: number) => updatePost(id as number),
+    onSuccess: (apiData, postId) => {
+      queryClient.setQueryData(["posts", pageNumber], (postsData: Post[]) => {
+        return postsData?.map((post) =>
+          post.id === postId ? { ...post, title: apiData.title } : post
+        );
       });
     },
   });
@@ -48,6 +59,9 @@ export default function PostsWithPagination() {
           </Link>
           <button onClick={() => deleteMutation.mutate(item.id as number)}>
             Delete
+          </button>
+          <button onClick={() => updateMutation.mutate(item.id as number)}>
+            Update
           </button>
         </>
       ))}
