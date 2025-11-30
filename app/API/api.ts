@@ -36,3 +36,13 @@ export const updatePost = async (id: number): Promise<Post> => {
   const res = await api.patch(`/posts/${id}`, { title: "The data is updated" });
   return res.data;
 };
+
+// FOR INFINITE SCROLLING
+export const fetchInfiniteScroll = async ({
+  pageParam = 0,
+}: {
+  pageParam: number; // Type add করো
+}): Promise<Post[]> => {
+  const res = await api.get(`/posts?_start=${pageParam}&_limit=10`);
+  return res.status === 200 ? res.data : [];
+};

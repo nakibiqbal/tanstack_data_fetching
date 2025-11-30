@@ -7,6 +7,9 @@ export default function Home() {
 
       <Link href="/posts">Go to Posts</Link>
       <Link href="/postWithPagination">Go to Post with Pagination</Link>
+      <Link href="/postsWithInfiniteScroll">
+        Go to Posts with Infinite Scroll
+      </Link>
     </div>
   );
 }
