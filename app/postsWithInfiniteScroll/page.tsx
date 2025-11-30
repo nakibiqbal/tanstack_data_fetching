@@ -3,6 +3,8 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { fetchInfiniteScroll } from "../API/api";
 import { Post } from "../API/types";
+import { useInView } from "react-intersection-observer";
+import { useEffect } from "react";
 
 export default function PostsWithInfiniteScroll() {
   const { data, hasNextPage, fetchNextPage, isFetchingNextPage, status } =
@@ -15,6 +17,16 @@ export default function PostsWithInfiniteScroll() {
         return lastPage.length === 0 ? undefined : allPages.length * 10;
       },
     });
+
+  const { ref, inView } = useInView({
+    threshold: 1,
+  });
+
+  useEffect(() => {
+    if (inView && hasNextPage) {
+      fetchNextPage();
+    }
+  }, [inView, hasNextPage, fetchNextPage]);
 
   if (status === "pending") return <p>Loading...</p>;
 
@@ -36,24 +48,14 @@ export default function PostsWithInfiniteScroll() {
         </div>
       ))}
 
-      <div style={{ textAlign: "center", marginTop: "20px" }}>
-        <button
-          onClick={() => fetchNextPage()}
-          disabled={!hasNextPage || isFetchingNextPage}
-          style={{
-            padding: "10px 20px",
-            fontSize: "16px",
-            cursor:
-              hasNextPage && !isFetchingNextPage ? "pointer" : "not-allowed",
-            opacity: hasNextPage && !isFetchingNextPage ? 1 : 0.5,
-          }}
-        >
-          {isFetchingNextPage
-            ? "Loading more..."
-            : hasNextPage
-            ? "Load More"
-            : "No more posts"}
-        </button>
+      <div ref={ref}>
+        {isFetchingNextPage ? (
+          <p>Loading more...</p>
+        ) : hasNextPage ? (
+          <p>Load more</p>
+        ) : (
+          <p>No more data</p>
+        )}
       </div>
     </div>
   );
